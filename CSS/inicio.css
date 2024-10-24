@@ -1,0 +1,497 @@
+/* Seção scrollável para as listas */
+.scrollable-section {
+    display: flex;
+    flex-wrap: nowrap;
+    /* Impede que as listas quebrem em outra linha */
+    overflow-x: auto;
+    /* Ativa o scroll horizontal */
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-y: visible;
+    white-space: nowrap;
+    /* Evita quebra de linha nas listas */
+}
+
+.lista {
+    flex-shrink: 0;
+    /* Garante que as listas não sejam comprimidas */
+    width: 250px;
+    margin-right: 20px;
+    background-color: #f3f3f3;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    height: auto;
+    overflow-y: auto;
+    /* Permite scroll vertical se necessário */
+}
+
+.lista h2 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.lista .tarefa {
+    background-color: #fff;
+    color: black;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.lista-criadas {
+    background-color: #FFA500; /* Altere para a cor que desejar */
+    padding: 20px;
+    border-radius: 10px; /* Para dar bordas arredondadas, se desejar */
+    color: white; /* Caso queira mudar a cor do texto */
+}
+
+/* Estilo para o botão dentro da lista */
+.lista-criadas .add-tarefa {
+    background-color: #6a1b9a; /* Cor do botão */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.lista-criadas .add-tarefa:hover {
+    background-color: rgba(255, 255, 255, 0.9); /* Fundo branco com leve transparência no hover */
+    color: #FFF; /* Texto fica branco ao passar o mouse */
+}
+
+/* Botão "Adicionar Tarefa" */
+.lista .add-tarefa {
+    background-color: white;
+    border: none;
+    color: inherit; /* Cor do texto será herdada da cor da lista */
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold; /* Texto em negrito */
+    margin-top: 10px;
+    border-radius: 20px 20px 20px 20px;
+    display: block;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* Estilo do botão para adicionar lista */
+.add-lista {
+    position: fixed;
+    /* Ajustando para que fique fixo no topo da tela */
+    top: 20px;
+    right: 20px;
+}
+
+.principal {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    /* Garante que o container ocupe a altura total da viewport */
+    overflow: hidden;
+    /* Evita que o conteúdo transborde */
+}
+
+.add-lista button {
+    background-color: #af90e3;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* ----------------------------------TAREFAS-------------------------------------------------------- */
+/* Geral */
+.task-modal {
+    background-color: #ff914d;
+    /* Cor de fundo laranja */
+    padding: 20px;
+    border-radius: 15px;
+    /* Bordas arredondadas */
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    /* Garante que o modal fique acima do overlay */
+}
+
+/* Exemplo de estilo padrão para o modal de tarefa */
+#taskModal {
+    background-color: #ffffff5e; /* Cor padrão caso não haja lista selecionada */
+    border-radius: 10px;
+    padding: 20px;
+    width: 225px;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza o conteúdo horizontalmente */
+    justify-content: center; /* Centraliza o conteúdo verticalmente */
+}
+
+.task-modal h2 {
+    color: white;
+    font-size: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+    /* Centralizar o título */
+}
+
+.task-modal label {
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+.task-modal input[type="text"],
+.task-modal textarea,
+.task-modal input[type="date"],
+.task-modal select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+}
+
+.task-modal textarea {
+    height: 60px;
+}
+
+.task-modal input[type="date"],
+.task-modal select {
+    background-color: white;
+    color: #333;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+}
+
+.save-btn,
+.cancel-btn {
+    background-color: #ff6500;
+    /* Cor de fundo laranja escuro */
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.save-btn:hover,
+.cancel-btn:hover {
+    background-color: #e55b00;
+    /* Efeito hover mais escuro */
+}
+
+/* Botão Cancelar */
+.cancel-btn {
+    background-color: #ff6500;
+}
+
+.cancel-btn:hover {
+    background-color: #d85400;
+}
+
+/* --------------------------------Botão de overlay (camada semitransparente) que cobre o conteúdo de fundo, 
+impedindo qualquer clique ou interação enquanto o modal está aberto. -----------------------------------*/
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    /* Fundo escuro semitransparente */
+    z-index: 999;
+    /* Garantir que fique acima dos outros elementos */
+    display: none;
+    /* Inicialmente escondido */
+}
+
+/* --------------------------------CARDS CONFIGURAÇÕES----------------------------------- */
+/* Estilo para cada tarefa (card) */
+.tarefa {
+    background-color: #ffffff;
+    padding: 15px;
+    margin-bottom: 15px;
+    /* Espaçamento entre as tarefas */
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    min-height: 100px;
+    /* Tamanho mínimo para cada tarefa */
+    overflow: visible;
+    text-align: left;
+    position: relative;
+    /* cursor: pointer; */
+    /* Cursor indicando que é clicável */
+}
+
+/* Estilo para o card concluído */
+.tarefa.concluido {
+    background-color: #d4edda;
+    /* Um verde claro */
+    text-decoration: line-through;
+    /* Coloca um traço sobre o texto */
+    color: #6c757d;
+    /* Cor mais suave */
+}
+
+.tarefa.concluido h3,
+.tarefa.concluido p {
+    text-decoration: line-through;
+    /* Coloca linha sobre o texto */
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    /* Coloca os ícones nos cantos opostos */
+    margin-bottom: 10px;
+    /* Dá espaço abaixo dos ícones */
+}
+
+.edit-icon,
+.delete-icon {
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.edit-icon {
+  color: #000000;
+}
+
+.delete-icon {
+  color: #000000;
+}
+
+.delete-icon:hover {
+  color: #ff6b6b;
+}
+
+/* Estilo da data */
+.tarefa p {
+    margin: 5px 0;
+}
+
+/* Estilo para a prioridade */
+.priority {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #ffffff;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+/* Cores para diferentes prioridades */
+.priority.alta {
+    background-color: #e74c3c;
+    /* Vermelho para alta prioridade */
+}
+
+.priority.media {
+    background-color: #f39c12;
+    /* Laranja para média prioridade */
+}
+
+.priority.baixa {
+    background-color: #2ecc71;
+    /* Verde para baixa prioridade */
+}
+
+/* Título da tarefa centralizado */
+/* Estilo para o título da tarefa */
+.tarefa h3 {
+    font-size: 18px;
+    text-align: center;
+    white-space: nowrap;
+    /* Impede que o texto quebre para uma nova linha */
+    overflow: hidden;
+    /* Oculta o excesso de texto */
+    text-overflow: ellipsis;
+    /* Adiciona "..." quando o texto é muito longo */
+    max-width: 100%;
+    /* Limita a largura máxima do título */
+    margin-bottom: 10px;
+}
+
+/* Estilo para o checkbox de "Concluído" */
+.tarefa label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    /* Espaço abaixo do checkbox */
+}
+
+.tarefa input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+textarea {
+    resize: none;
+    /* Impede o redimensionamento */
+    width: 100%;
+    /* Garante que ele ocupe 100% da largura disponível */
+    height: 60px;
+    /* Define uma altura fixa */
+    padding: 10px;
+    border-radius: 5px;
+    /* Bordas arredondadas */
+    border: none;
+    /* Remove bordas padrão */
+    box-sizing: border-box;
+    /* Garante que o padding não ultrapasse a largura */
+}
+
+/* ---------------------------------------LISTAS-------------------------------- */
+/* Estilos do modal para adicionar lista */
+/* Modal */
+#listModal {
+    display: none;
+}
+
+/* Estilo para o cabeçalho da lista */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+/* Estilo para os ícones de editar e excluir */
+.edit-list-icon,
+.delete-list-icon {
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 10px;
+    color: white; /* A mesma cor do texto do cabeçalho */
+}
+
+/* Adicionar um efeito hover nos ícones */
+.edit-list-icon:hover,
+.delete-list-icon:hover {
+    color: #ccc; /* Cor mais clara no hover */
+}
+
+#listModal .modal-content {
+    background-color: #a464c2;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza o conteúdo horizontalmente */
+    justify-content: center; /* Centraliza o conteúdo verticalmente */
+    padding: 20px;
+    border-radius: 20px;
+    /* Bordas arredondadas */
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    position: fixed;
+    z-index: 1001; /* Garante que o modal da lista fique à frente de tudo */
+    text-align: center;
+    /* Centraliza o texto */
+    margin: 0 auto;
+    /* Centraliza o conteúdo horizontalmente */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Fechar o Modal */
+#listModal .close-modal {
+    color: white;
+    font-size: 24px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+}
+
+/* Label */
+#listModal label {
+    display: block;
+    margin-bottom: 10px;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Input para o nome da lista */
+#listModal input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    text-align: center;
+}
+
+
+/* Campo de seleção de cor */
+#listModal input[type="color"] {
+    display: block;
+    margin: 0 auto 15px;
+    /* Centraliza o seletor de cor */
+    width: 50px;
+    height: 50px;
+    border-radius: 10%;
+    /*Formato circular*/
+    border: none;
+    cursor: pointer;
+}
+
+/* Estilização dos botões */
+.button-group-list {
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Preenche a largura total do modal */
+    margin-top: 20px;
+}
+
+.button-group-list #cancel-btn-list {
+    text-align: left;
+}
+
+.button-group-list .save-list-btn {
+    text-align: right;
+}
+
+.button-group-list #cancel-btn-list,
+.button-group-list .save-list-btn {
+    background-color: #6a1b9a;
+    border: none;
+    border-radius: 15px;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 60%; /* Define uma largura para os botões */
+}
+
+.button-group-list #cancel-btn-list:hover,
+.button-group-list .save-list-btn:hover {
+    background-color: #55137f;
+    /* Cor roxa mais escura no hover */
+}
