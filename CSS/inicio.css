@@ -465,6 +465,7 @@ textarea {
 .button-group-list {
     display: flex;
     justify-content: space-between;
+    gap: 30px;
     width: 100%; /* Preenche a largura total do modal */
     margin-top: 20px;
 }

@@ -1,7 +1,31 @@
+//  import { test } from "../firebase";
+const firebaseConfig = {
+    apiKey: "AIzaSyB9UQ6-4pQQVjlOhmsQWN86n3TUcmg8eAk",
+    authDomain: "to-do-26b24.firebaseapp.com",
+    databaseURL: "https://to-do-26b24-default-rtdb.firebaseio.com",
+    projectId: "to-do-26b24",
+    storageBucket: "to-do-26b24.appspot.com",
+    messagingSenderId: "767144656111",
+    appId: "1:767144656111:web:dc7d566149f67c176a6f1a",
+    measurementId: "G-H2ZGN2GRSP"
+};
+
+
+// Inicialize o Firebase
+const app = firebase.initializeApp(firebaseConfig);
+
+
+// Inicialize o Firestore
+const db = firebase.firestore();
+
+
+
+
 // Função para salvar as listas de tarefas no LocalStorage
 function saveTasksToLocalStorage(taskLists) {
     localStorage.setItem('taskLists', JSON.stringify(taskLists)); // Converte o objeto para JSON e salva no LocalStorage
 }
+
 
 // Função para carregar as tarefas do LocalStorage
 function loadTasksFromLocalStorage() {
@@ -9,8 +33,33 @@ function loadTasksFromLocalStorage() {
     return storedTasks ? JSON.parse(storedTasks) : {}; // Se houver dados, retorna o objeto JSON, caso contrário, um objeto vazio
 }
 
+
+const getAllTasks = async () => {
+    try {
+        const querySnapshot = await db.collection("tasks").get();
+
+        // Array para armazenar todas as tarefas
+        const tasks = [];
+
+
+        // Iterando sobre os documentos retornados
+        querySnapshot.forEach((doc) => {
+            // Pega os dados do documento e seu ID
+            const task = { id: doc.id, ...doc.data() };
+            tasks.push(task);
+        });
+
+
+        console.log("Tarefas recuperadas com sucesso:", tasks);
+        return tasks; // Aqui você pode retornar ou processar as tarefas conforme necessário
+    } catch (error) {
+        console.error("Erro ao buscar todas as tarefas: ", error);
+    }
+};
 // Inicializa as listas de tarefas carregadas do LocalStorage
-let taskLists = loadTasksFromLocalStorage();
+// let taskLists = loadTasksFromLocalStorage();
+let taskLists = getAllTasks();
+
 
 // Função para ativar cor no botão selecionado (navegação)
 document.addEventListener('DOMContentLoaded', () => {
@@ -18,12 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentPath = window.location.pathname;
     const page = currentPath.substring(currentPath.lastIndexOf('/') + 1);
 
+
     const buttonMap = {
         'index.html': 'btn-inicio',
         'calendario.html': 'btn-calendario',
         'hoje.html': 'btn-hoje',
         'filtro.html': 'btn-filtro'
     };
+
 
     if (buttonMap[page]) {
         const activeButton = document.getElementById(buttonMap[page]);
@@ -37,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     navButtons.forEach(button => {
         button.addEventListener('click', () => {
             navButtons.forEach(btn => btn.classList.remove('active'));
@@ -45,15 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
 // Funções para trabalhar com LocalStorage
 function saveTasksToLocalStorage(taskLists) {
     localStorage.setItem('taskLists', JSON.stringify(taskLists));
 }
 
+
 function loadTasksFromLocalStorage() {
     const storedTasks = localStorage.getItem('taskLists');
     return storedTasks ? JSON.parse(storedTasks) : {};
 }
+
 
 // ----------------------------------ADICIONAR TAREFA--------------------------------------------------------------------------
 // Seleciona os elementos necessários para tarefas
@@ -62,49 +117,60 @@ const cancelBtn = document.querySelector('.cancel-btn'); // Botão de cancelar t
 const taskForm = document.getElementById('taskForm'); // Formulário de tarefa
 const overlay = document.getElementById('overlay'); // Overlay do modal de tarefa
 
+
 let activeList = null; // Lista ativa onde a tarefa será inserida
 let currentTask = null; // Variável que armazena a tarefa sendo editada
 
+
 // Seleciona o botão "Adicionar Tarefa" da lista "Criadas"
 const addTarefaCriadasBtn = document.querySelector('.lista-criadas .add-tarefa');
+
 
 // Adiciona o evento de click para o botão "Adicionar Tarefa" da lista "Criadas"
 if (addTarefaCriadasBtn) {
     addTarefaCriadasBtn.addEventListener('click', () => openTaskModal(document.querySelector('.lista-criadas')));
 }
 
+
 // Função para abrir o modal de tarefa
 function openTaskModal(list) {
     activeList = list; // Define a lista ativa
 
+
     // Obtém a cor de fundo da lista ativa
     const listColor = getComputedStyle(activeList).backgroundColor;
 
+
     // Define a cor de fundo do modal de tarefa com a cor da lista ativa
     taskModal.style.backgroundColor = listColor;
+
 
     taskModal.style.display = 'flex'; // Exibe o modal
     overlay.style.display = 'block';  // Exibe o overlay
 }
 
+
 // Função para criar ou ajustar listas dinamicamente com a cor do texto
 function updateButtonColorForList(listElement) {
     const listColor = window.getComputedStyle(listElement).backgroundColor;
     const addTarefaButton = listElement.querySelector('.add-tarefa');
-    
+
     // Ajusta a cor do texto do botão para o mesmo tom da lista
     addTarefaButton.style.color = listColor;
 }
+
 
 // Quando criar uma nova lista
 document.querySelectorAll('.lista').forEach(listElement => {
     updateButtonColorForList(listElement);
 });
 
+
 // Função que captura os dados e adiciona ou edita a tarefa
 function saveTask(event) {
     event.preventDefault();
     console.log("Salvando tarefa...");
+
 
     let taskName = document.getElementById('taskName').value;
     const taskDescription = document.getElementById('taskDescription').value;
@@ -113,18 +179,22 @@ function saveTask(event) {
     const concluidoCheckbox = document.getElementById('concluidoCheckbox');
     let isConcluded = concluidoCheckbox ? concluidoCheckbox.checked : false;
 
+
     // Limitar o nome da tarefa a 30 caracteres
     const maxTitleLength = 30;
     if (taskName.length > maxTitleLength) {
         taskName = taskName.substring(0, maxTitleLength) + '...';
     }
 
+
     // Formatar a data para dd/mm apenas para exibição no cartão
     const [year, month, day] = taskDate.split('-');
     const formattedDate = `${day}/${month}`;
 
+
     const priorityClass = taskPriority.toLowerCase();
     const listId = activeList.getAttribute('data-list-id');
+
 
     if (currentTask) {
         console.log(formattedDate);
@@ -136,6 +206,7 @@ function saveTask(event) {
         currentTask.querySelector('p').textContent = `Data: ${formattedDate}`; // Exibe a data formatada no cartão
         currentTask.querySelector('.checkbox-concluido').checked = isConcluded;
 
+
         // Atualizar no localStorage
         taskLists[listId] = taskLists[listId].map(task => {
             if (task.id === parseInt(taskId)) {
@@ -144,9 +215,11 @@ function saveTask(event) {
                 task.date = taskDate; // Mantém o formato yyyy-mm-dd para armazenamento
                 task.priority = taskPriority;
                 task.concluded = isConcluded;
+                task.list = listId;
             }
             return task;
         });
+
 
         saveTasksToLocalStorage(taskLists);
         currentTask = null;
@@ -160,12 +233,15 @@ function saveTask(event) {
             description: taskDescription,
             date: taskDate, // Armazena a data no formato yyyy-mm-dd
             priority: taskPriority,
-            concluded: isConcluded
+            concluded: isConcluded,
+            list: listId
         };
+
 
         const tarefa = document.createElement('div');
         tarefa.classList.add('tarefa');
         tarefa.setAttribute('data-task-id', taskId);
+        tarefa.setAttribute('data-list-id', listId);
         tarefa.innerHTML = `
             <div class="task-header">
                 <span class="edit-icon">&#9998;</span>
@@ -180,17 +256,20 @@ function saveTask(event) {
             </label>
         `;
 
+
         // Função de editar
         const editIcon = tarefa.querySelector('.edit-icon');
         editIcon.addEventListener('click', () => {
             openEditModal(taskName, taskDescription, taskDate, taskPriority, tarefa, isConcluded);
         });
 
+
         // Função de excluir
         const deleteIcon = tarefa.querySelector('.delete-icon');
         deleteIcon.addEventListener('click', () => {
             deleteTask(tarefa, listId, taskId);
         });
+
 
         // Checkbox de "Concluído"
         const checkbox = tarefa.querySelector('.checkbox-concluido');
@@ -202,23 +281,33 @@ function saveTask(event) {
             }
         });
 
+
         if (!taskLists[listId]) {
             taskLists[listId] = [];
         }
         taskLists[listId].push(newTask);
         saveTasksToLocalStorage(taskLists);
 
+
+        //Adicionar no Firestore
+        AddandEditTask(newTask)
+
+
         activeList.querySelector('.tarefas').appendChild(tarefa);
         console.log("Tarefa adicionada: ", taskDate, taskName, taskDescription);
     }
 
+
     closeTaskModal();
 }
+
 
 // Função para abrir o modal de edição
 function openEditModal(name, description, date, priority, tarefa, isConcluded) {
     taskModal.style.display = 'flex';
     overlay.style.display = 'block';
+    taskModal.style.backgroundColor = "#a464c2";
+
 
     // Se a data estiver no formato yyyy-mm-dd, converta para dd/mm ao exibir no modal
     document.getElementById('taskName').value = name;
@@ -226,6 +315,7 @@ function openEditModal(name, description, date, priority, tarefa, isConcluded) {
     document.getElementById('taskDate').value = date; // Mantém o formato yyyy-mm-dd no campo de data
     document.getElementById('taskPriority').value = priority;
     document.getElementById('concluidoCheckbox').checked = isConcluded;
+
 
     currentTask = tarefa;
 }
@@ -235,12 +325,11 @@ function closeTaskModal() {
     taskModal.style.display = 'none';
     overlay.style.display = 'none';
 
+
     // Resetar o formulário e limpar a referência à tarefa atual
     taskForm.reset();
     currentTask = null; // Limpa a referência da tarefa atual
 }
-
-
 
 // Função para deletar uma tarefa
 function deleteTask(taskElement, listId, taskId) {
@@ -249,10 +338,12 @@ function deleteTask(taskElement, listId, taskId) {
     saveTasksToLocalStorage(taskLists);
 }
 
+
 // Eventos para os botões de cancelar e fechar modal de tarefa
 if (cancelBtn) {
     cancelBtn.addEventListener('click', closeTaskModal);
 }
+
 
 if (taskForm) {
     taskForm.addEventListener('submit', saveTask);
@@ -265,11 +356,13 @@ const closeListModalBtn = document.querySelector('.close-modal'); // Botão de f
 const listForm = document.getElementById('listForm'); // Formulário de lista
 const scrollableSection = document.querySelector('.scrollable-section'); // Seção para adicionar as listas
 
+
 // Função para abrir o modal de nova lista
 function openListModal() {
     listModal.style.display = 'flex';
     overlay.style.display = 'block';
 }
+
 
 // Função para fechar o modal de lista
 function closeListModal() {
@@ -278,16 +371,95 @@ function closeListModal() {
     listForm.reset();
 }
 
+
 // Evento para abrir o modal de lista ao clicar em "+ Lista"
 document.querySelector('.add-lista button').addEventListener('click', openListModal);
+
 
 // Evento para fechar o modal de lista ao clicar em "Cancelar"
 if (cancelBtnList) {
     cancelBtnList.addEventListener('click', closeListModal);
 }
 
+
 // Evento para fechar o modal de lista ao clicar no "X"
 closeListModalBtn.addEventListener('click', closeListModal);
+
+
+// Função para adicionar ou editar lista no Firebase
+const AddandEditList = async (list) => {
+    try {
+        await db.collection("lists").doc(list.id.toString()).set(list);
+        console.log("Lista adicionada ou editada com sucesso no Firebase!");
+    } catch (error) {
+        console.error("Erro ao adicionar ou editar a lista: ", error);
+    }
+};
+
+// Função para buscar todas as listas do Firebase
+const getAllLists = async () => {
+    try {
+        const querySnapshot = await db.collection("lists").get();
+        const lists = [];
+        // console.log(lists)
+        querySnapshot.forEach((doc) => {
+            const list = { id: doc.id, ...doc.data() };
+            lists.push(list);
+        });
+        return lists;
+    } catch (error) {
+        console.error("Erro ao buscar todas as listas: ", error);
+    }
+};
+
+// Função para carregar as listas do Firebase
+const loadListsFromFirebase = async () => {
+    try {
+        const lists = await getAllLists(); // Recupera todas as listas do Firestore
+
+        lists.forEach((list) => {
+            const newList = document.createElement('div');
+            newList.classList.add('lista');
+            newList.setAttribute('data-list-id', list.id);
+            newList.style.backgroundColor = list.color;
+
+            newList.innerHTML = `
+                <div class="list-header">
+                    <span class="edit-list-icon">&#9998;</span> <!-- Ícone de edição -->
+                    <h2>${list.name}</h2>
+                    <span class="delete-list-icon">&#128465;</span> <!-- Ícone de exclusão -->
+                </div>
+                <div class="tarefas"></div>
+                <button class="add-tarefa">Adicionar Tarefa</button>
+            `;
+
+            scrollableSection.appendChild(newList);
+
+            // Adicionar evento de "Adicionar Tarefa" à nova lista
+            const addTarefaBtn = newList.querySelector('.add-tarefa');
+            addTarefaBtn.addEventListener('click', () => openTaskModal(newList));
+
+            // Função de editar a lista
+            const editListIcon = newList.querySelector('.edit-list-icon');
+            editListIcon.addEventListener('click', () => {
+                editList(newList);
+            });
+
+            // Função de excluir a lista
+            const deleteListIcon = newList.querySelector('.delete-list-icon');
+            deleteListIcon.addEventListener('click', () => {
+                deleteList(newList, list.id);
+            });
+
+            // Atualizar a cor do texto do botão
+            updateButtonColorForList(newList);
+
+            console.log(`Lista ${list.name} carregada do Firebase`);
+        });
+    } catch (error) {
+        console.error("Erro ao carregar listas do Firebase: ", error);
+    }
+};
 
 // Evento para salvar nova lista
 listForm.addEventListener('submit', (event) => {
@@ -297,46 +469,51 @@ listForm.addEventListener('submit', (event) => {
     const listColor = document.getElementById('listColor').value;
     const listId = Date.now();
 
-    const newList = document.createElement('div');
-    newList.classList.add('lista');
-    newList.setAttribute('data-list-id', listId);
-    newList.style.backgroundColor = listColor;
+    const newList = {
+        id: listId,
+        name: listName,
+        color: listColor
+    };
 
-    newList.innerHTML = `
-    <div class="list-header">
-        <span class="edit-list-icon">&#9998;</span> <!-- Ícone de edição -->
-        <h2>${listName}</h2>
-        <span class="delete-list-icon">&#128465;</span> <!-- Ícone de exclusão -->
-    </div>
-    <div class="tarefas"></div>
-    <button class="add-tarefa">Adicionar Tarefa</button>
+    // Criar a lista no DOM
+    const listElement = document.createElement('div');
+    listElement.classList.add('lista');
+    listElement.setAttribute('data-list-id', listId);
+    listElement.style.backgroundColor = listColor;
+
+    listElement.innerHTML = `
+        <div class="list-header">
+            <span class="edit-list-icon">&#9998;</span> <!-- Ícone de edição -->
+            <h2>${listName}</h2>
+            <span class="delete-list-icon">&#128465;</span> <!-- Ícone de exclusão -->
+        </div>
+        <div class="tarefas"></div>
+        <button class="add-tarefa">Adicionar Tarefa</button>
     `;
 
-    scrollableSection.appendChild(newList);
+    scrollableSection.appendChild(listElement);
 
     // Adicionar evento de "Adicionar Tarefa" à nova lista
-    const addTarefaBtn = newList.querySelector('.add-tarefa');
-    addTarefaBtn.addEventListener('click', () => openTaskModal(newList));
+    const addTarefaBtn = listElement.querySelector('.add-tarefa');
+    addTarefaBtn.addEventListener('click', () => openTaskModal(listElement));
 
     // Função de editar a lista
-    const editListIcon = newList.querySelector('.edit-list-icon');
+    const editListIcon = listElement.querySelector('.edit-list-icon');
     editListIcon.addEventListener('click', () => {
-        // Função para editar a lista (nome ou cor)
-        editList(newList);
+        editList(listElement);
     });
 
     // Função de excluir a lista
-    const deleteListIcon = newList.querySelector('.delete-list-icon');
+    const deleteListIcon = listElement.querySelector('.delete-list-icon');
     deleteListIcon.addEventListener('click', () => {
-        // Função para excluir a lista
-        deleteList(newList, listId);
+        deleteList(listElement, listId);
     });
 
     // Atualizar a cor do texto do botão
-    updateButtonColorForList(newList);
+    updateButtonColorForList(listElement);
 
-    taskLists[listId] = [];
-    saveTasksToLocalStorage(taskLists);
+    // Salvar no Firestore
+    AddandEditList(newList);
 
     closeListModal();
 });
@@ -349,12 +526,14 @@ function editList(listElement) {
     }
 }
 
+
 // Função para excluir a lista
 function deleteList(listElement, listId) {
     listElement.remove();
     delete taskLists[listId]; // Remove a lista do localStorage
     saveTasksToLocalStorage(taskLists);
 }
+
 
 // Fecha o modal de lista ao clicar fora dele
 window.addEventListener('click', (event) => {
@@ -390,20 +569,200 @@ function loadTasksFromFirebase() {
 
 function updateTaskInFirebase(taskId, updatedTask) {
     firebase.database().ref('tasks/' + taskId).update(updatedTask)
-    .then(() => {
-        console.log("Tarefa atualizada com sucesso!");
-    })
-    .catch((error) => {
-        console.error("Erro ao atualizar tarefa:", error);
-    });
+        .then(() => {
+            console.log("Tarefa atualizada com sucesso!");
+        })
+        .catch((error) => {
+            console.error("Erro ao atualizar tarefa:", error);
+        });
 }
 
 function deleteTaskFromFirebase(taskId) {
     firebase.database().ref('tasks/' + taskId).remove()
-    .then(() => {
-        console.log("Tarefa excluída com sucesso!");
-    })
-    .catch((error) => {
-        console.error("Erro ao excluir tarefa:", error);
-    });
+        .then(() => {
+            console.log("Tarefa excluída com sucesso!");
+        })
+        .catch((error) => {
+            console.error("Erro ao excluir tarefa:", error);
+        });
 }
+
+// Função para carregar todas as listas e suas tarefas do Firebase
+async function loadTasksFromFirebase() {
+    try {
+        const querySnapshot = await db.collection("tasks").get();
+
+        // Limpa as tarefas visíveis antes de carregar novas tarefas do Firebase
+        document.querySelectorAll('.tarefas').forEach(taskListElement => {
+            taskListElement.innerHTML = ''; // Limpa cada lista de tarefas no DOM
+        });
+
+        // Itera sobre cada tarefa retornada
+        querySnapshot.forEach((doc) => {
+            const task = doc.data();
+            const taskListId = task.list; // ID da lista a qual a tarefa pertence
+
+            // Encontrar o elemento da lista que tem o mesmo ID
+            const targetList = document.querySelector(`.lista[data-list-id='${taskListId}']`);
+
+            if (targetList) {
+                // Criar o card da tarefa
+                const tarefa = document.createElement('div');
+                tarefa.classList.add('tarefa');
+                tarefa.setAttribute('data-task-id', task.id);
+
+                tarefa.innerHTML = `
+                    <div class="task-header">
+                        <span class="edit-icon">&#9998;</span>
+                        <span class="delete-icon">&#128465;</span>
+                    </div>
+                    <h3>${task.name}</h3>
+                    <p><strong>Data:</strong> ${task.date.split('-').reverse().join('/')}</p> 
+                    <p class="priority ${task.priority.toLowerCase()}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</p>
+                    <label>
+                        <input type="checkbox" class="checkbox-concluido" ${task.concluded ? 'checked' : ''}>
+                        Concluído
+                    </label>
+                `;
+
+                // Adicionar o evento de edição
+                tarefa.querySelector('.edit-icon').addEventListener('click', () => {
+                    openEditModal(task.name, task.description, task.date, task.priority, tarefa, task.concluded);
+                });
+
+                // Adicionar o evento de exclusão
+                tarefa.querySelector('.delete-icon').addEventListener('click', () => {
+                    deleteTask(tarefa, taskListId, task.id);
+                });
+
+                // Adicionar evento de checkbox
+                tarefa.querySelector('.checkbox-concluido').addEventListener('change', (event) => {
+                    if (event.target.checked) {
+                        tarefa.classList.add('concluido');
+                    } else {
+                        tarefa.classList.remove('concluido');
+                    }
+                });
+
+                // Adiciona a tarefa na lista correspondente
+                targetList.querySelector('.tarefas').appendChild(tarefa);
+            } else {
+                console.error(`Lista com ID ${taskListId} não encontrada no DOM.`);
+            }
+        });
+
+        console.log("Tarefas carregadas e adicionadas às listas corretamente!");
+    } catch (error) {
+        console.error("Erro ao buscar todas as tarefas: ", error);
+    }
+}
+
+async function loadTasksFromFirebase() {
+    try {
+        const querySnapshot = await db.collection("tasks").get();
+
+        // Limpa as tarefas visíveis antes de carregar novas tarefas do Firebase
+        document.querySelectorAll('.tarefas').forEach(taskListElement => {
+            taskListElement.innerHTML = ''; // Limpa cada lista de tarefas no DOM
+        });
+
+        // Itera sobre cada tarefa retornada
+        querySnapshot.forEach((doc) => {
+            const task = doc.data();
+            let taskListId = task.list; // ID da lista a qual a tarefa pertence
+
+            // Verificar se a lista é nula ou indefinida e, nesse caso, definir como "Criadas"
+            if (!taskListId) {
+                console.warn(`Tarefa sem 'listId'. Atribuindo à lista 'Criadas'.`);
+                const createdListElement = document.querySelector('.lista[data-list-id="criadas"]');
+                taskListId = createdListElement ? 'criadas' : null;
+            }
+
+            // Encontrar o elemento da lista que tem o mesmo ID
+            const targetList = document.querySelector(`.lista[data-list-id='${taskListId}']`);
+
+            if (targetList) {
+                // Criar o card da tarefa
+                const tarefa = document.createElement('div');
+                tarefa.classList.add('tarefa');
+                tarefa.setAttribute('data-task-id', task.id);
+
+                tarefa.innerHTML = `
+                    <div class="task-header">
+                        <span class="edit-icon">&#9998;</span>
+                        <span class="delete-icon">&#128465;</span>
+                    </div>
+                    <h3>${task.name}</h3>
+                    <p><strong>Data:</strong> ${task.date.split('-').reverse().join('/')}</p> 
+                    <p class="priority ${task.priority.toLowerCase()}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</p>
+                    <label>
+                        <input type="checkbox" class="checkbox-concluido" ${task.concluded ? 'checked' : ''}>
+                        Concluído
+                    </label>
+                `;
+
+                // Adicionar o evento de edição
+                tarefa.querySelector('.edit-icon').addEventListener('click', () => {
+                    openEditModal(task.name, task.description, task.date, task.priority, tarefa, task.concluded);
+                });
+
+                // Adicionar o evento de exclusão
+                tarefa.querySelector('.delete-icon').addEventListener('click', () => {
+                    deleteTask(tarefa, taskListId, task.id);
+                });
+
+                // Adicionar evento de checkbox
+                tarefa.querySelector('.checkbox-concluido').addEventListener('change', (event) => {
+                    if (event.target.checked) {
+                        tarefa.classList.add('concluido');
+                    } else {
+                        tarefa.classList.remove('concluido');
+                    }
+                });
+
+                // Adiciona a tarefa na lista correspondente
+                targetList.querySelector('.tarefas').appendChild(tarefa);
+            } else {
+                console.error(`Lista com ID ${taskListId} não encontrada no DOM.`);
+            }
+        });
+
+        console.log("Tarefas carregadas e adicionadas às listas corretamente!");
+    } catch (error) {
+        console.error("Erro ao buscar todas as tarefas: ", error);
+    }
+}
+
+// Função para buscar todas as tarefas de uma lista pelo ID da lista no Firebase
+const getTasksByListId = async (listId) => {
+    try {
+        const querySnapshot = await db.collection("tasks").where("listId", "==", listId).get();
+        const tasks = [];
+        querySnapshot.forEach((doc) => {
+            const task = { id: doc.id, ...doc.data() };
+            tasks.push(task);
+        });
+        return tasks;
+    } catch (error) {
+        console.error("Erro ao buscar tarefas pelo ID da lista: ", error);
+    }
+};
+
+// Carregar as listas e suas tarefas quando a página for carregada
+document.addEventListener('DOMContentLoaded', () => {
+    loadListsFromFirebase().then(() => {
+        // 2. Após carregar as listas, carregar as tarefas e colocá-las em suas respectivas listas
+        loadTasksFromFirebase();
+    });
+});
+
+//---------------------------------Funções do Firestore--------------------------------------
+const AddandEditTask = async (task) => {
+    try {
+        // Referenciando o documento com o ID fornecido (task.id)
+        await db.collection("tasks").doc(task.id.toString()).set(task);
+        console.log("Documento adicionado ou editado com sucesso!");
+    } catch (error) {
+        console.error("Erro ao adicionar ou editar documento: ", error);
+    }
+};

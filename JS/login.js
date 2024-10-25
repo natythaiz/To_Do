@@ -1,5 +1,5 @@
 import { database } from './firebase.js';
-//import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 // Selecionar elementos do formulário
 const signupForm = document.getElementById('signupForm');
@@ -18,12 +18,6 @@ signupForm.addEventListener('submit', (e) => {
     const email = emailInput.value;
     const password = passwordInput.value;
     const confirmPassword = confirmPasswordInput.value;
-
-    // Validação básica
-    if (password !== confirmPassword) {
-        alert('As senhas não coincidem!');
-        return;
-    }
 
     // Registrar o usuário com email e senha no Firebase
     auth.createUserWithEmailAndPassword(email, password)
