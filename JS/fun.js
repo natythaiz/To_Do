@@ -75,3 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+//Função para logout
+const buttonsLogout = document.querySelectorAll("logout")
+buttonsLogout.forEach((button)=> {
+    button.addEventListener("click", async () => {
+        try {
+            await auth.signOut();
+            alert("Logout realizado com sucesso!");
+            displayUserInfo(null);
+        } catch (error) {
+            alert("Erro ao sair: " + error.message);
+        }
+    })
+} );

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To Do Login</title>
+  <link rel="stylesheet" href="CSS/login.css"> <!-- Importa o CSS corretamente -->
+  <script src="JS/login.js"></script>
+</head>
+
+<body>
+  <form class="form" id ="login-form">
+    <p class="title">Entrar </p>
+    <p class="message">Adicione suas informações para finalizar seu Login.</p>
+
+    <label>
+      <input required="" placeholder="" type="email" id = "login-email" class="input">
+      <span>Email</span>
+    </label>
+
+    <label>
+      <input required="" placeholder="" type="password" id = "login-password" class="input">
+      <span>Senha</span>
+    </label>
+    <button class="submit">Enviar</button>
+    <p class="signin">Não tem um conta ? <a href="index.html">Registrar</a> </p>
+  </form>
+  
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <script type="module" src="JS/firebase.js"></script>
+</body>
+
+</html>

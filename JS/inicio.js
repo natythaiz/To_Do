@@ -10,29 +10,11 @@ const firebaseConfig = {
     measurementId: "G-H2ZGN2GRSP"
 };
 
-
 // Inicialize o Firebase
 const app = firebase.initializeApp(firebaseConfig);
 
-
 // Inicialize o Firestore
 const db = firebase.firestore();
-
-
-
-
-// Função para salvar as listas de tarefas no LocalStorage
-function saveTasksToLocalStorage(taskLists) {
-    localStorage.setItem('taskLists', JSON.stringify(taskLists)); // Converte o objeto para JSON e salva no LocalStorage
-}
-
-
-// Função para carregar as tarefas do LocalStorage
-function loadTasksFromLocalStorage() {
-    const storedTasks = localStorage.getItem('taskLists');
-    return storedTasks ? JSON.parse(storedTasks) : {}; // Se houver dados, retorna o objeto JSON, caso contrário, um objeto vazio
-}
-
 
 const getAllTasks = async () => {
     try {
@@ -56,10 +38,8 @@ const getAllTasks = async () => {
         console.error("Erro ao buscar todas as tarefas: ", error);
     }
 };
-// Inicializa as listas de tarefas carregadas do LocalStorage
-// let taskLists = loadTasksFromLocalStorage();
-let taskLists = getAllTasks();
 
+let taskLists = getAllTasks();
 
 // Função para ativar cor no botão selecionado (navegação)
 document.addEventListener('DOMContentLoaded', () => {
@@ -96,20 +76,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
-
+// ---------------------------------------------Local Storage-----------------------------------------------------------------------
 // Funções para trabalhar com LocalStorage
 function saveTasksToLocalStorage(taskLists) {
     localStorage.setItem('taskLists', JSON.stringify(taskLists));
 }
-
 
 function loadTasksFromLocalStorage() {
     const storedTasks = localStorage.getItem('taskLists');
     return storedTasks ? JSON.parse(storedTasks) : {};
 }
 
+// Função para salvar as listas de tarefas no LocalStorage
+function saveTasksToLocalStorage(taskLists) {
+    localStorage.setItem('taskLists', JSON.stringify(taskLists)); // Converte o objeto para JSON e salva no LocalStorage
+}
 
+// Função para carregar as tarefas do LocalStorage
+function loadTasksFromLocalStorage() {
+    const storedTasks = localStorage.getItem('taskLists');
+    return storedTasks ? JSON.parse(storedTasks) : {}; // Se houver dados, retorna o objeto JSON, caso contrário, um objeto vazio
+}
 // ----------------------------------ADICIONAR TAREFA--------------------------------------------------------------------------
 // Seleciona os elementos necessários para tarefas
 const taskModal = document.getElementById('taskModal'); // Modal de tarefa
@@ -147,8 +134,8 @@ function openTaskModal(list) {
 
     taskModal.style.display = 'flex'; // Exibe o modal
     overlay.style.display = 'block';  // Exibe o overlay
+    // activeList = null;
 }
-
 
 // Função para criar ou ajustar listas dinamicamente com a cor do texto
 function updateButtonColorForList(listElement) {
@@ -159,16 +146,16 @@ function updateButtonColorForList(listElement) {
     addTarefaButton.style.color = listColor;
 }
 
-
 // Quando criar uma nova lista
 document.querySelectorAll('.lista').forEach(listElement => {
     updateButtonColorForList(listElement);
 });
 
-
 // Função que captura os dados e adiciona ou edita a tarefa
-function saveTask(event) {
+async function saveTask(event) {
+
     event.preventDefault();
+    
     console.log("Salvando tarefa...");
 
 
@@ -191,15 +178,14 @@ function saveTask(event) {
     const [year, month, day] = taskDate.split('-');
     const formattedDate = `${day}/${month}`;
 
-
+    // activeList = document.querySelector(".listas-criadas")
     const priorityClass = taskPriority.toLowerCase();
-    const listId = activeList.getAttribute('data-list-id');
-
 
     if (currentTask) {
-        console.log(formattedDate);
-        // Editar tarefa existente
+
         const taskId = currentTask.getAttribute('data-task-id');
+        const activeListId = await getListByTaskId(taskId);      
+        
         currentTask.querySelector('h3').textContent = taskName;
         currentTask.querySelector('.priority').textContent = taskPriority.charAt(0).toUpperCase() + taskPriority.slice(1);
         currentTask.querySelector('.priority').className = `priority ${priorityClass}`;
@@ -207,36 +193,30 @@ function saveTask(event) {
         currentTask.querySelector('.checkbox-concluido').checked = isConcluded;
 
 
-        // Atualizar no localStorage
-        taskLists[listId] = taskLists[listId].map(task => {
-            if (task.id === parseInt(taskId)) {
-                task.name = taskName;
-                task.description = taskDescription;
-                task.date = taskDate; // Mantém o formato yyyy-mm-dd para armazenamento
-                task.priority = taskPriority;
-                task.concluded = isConcluded;
-                task.list = listId;
-            }
-            return task;
+        // Atualizar a tarefa no Firestore
+        AddandEditTask({
+            id: taskId,
+            name: taskName,
+            description: taskDescription,
+            date: taskDate,
+            priority: taskPriority,
+            concluded: isConcluded,
+            list: activeListId
         });
-
-
-        saveTasksToLocalStorage(taskLists);
-        currentTask = null;
-        console.log("Tarefa editada: ", taskDate, taskName, taskDescription);
     } else {
+        const listId = activeList.getAttribute('data-list-id');
         // Criar nova tarefa
         const taskId = Date.now();
         const newTask = {
             id: taskId,
             name: taskName,
             description: taskDescription,
-            date: taskDate, // Armazena a data no formato yyyy-mm-dd
+            date: taskDate,
             priority: taskPriority,
             concluded: isConcluded,
             list: listId
         };
-
+        // console.log(listId);
 
         const tarefa = document.createElement('div');
         tarefa.classList.add('tarefa');
@@ -251,7 +231,7 @@ function saveTask(event) {
             <p><strong>Data:</strong> ${formattedDate}</p> <!-- Exibe a data formatada -->
             <p class="priority ${priorityClass}">${taskPriority.charAt(0).toUpperCase() + taskPriority.slice(1)}</p>
             <label>
-                <input type="checkbox" class="checkbox-concluido" ${isConcluded ? 'checked' : ''}>
+                <input type="checkbox" class="checkbox-concluido" ${isConcluded ? 'checked' : 'disabled'}>
                 Concluído
             </label>
         `;
@@ -260,14 +240,14 @@ function saveTask(event) {
         // Função de editar
         const editIcon = tarefa.querySelector('.edit-icon');
         editIcon.addEventListener('click', () => {
-            openEditModal(taskName, taskDescription, taskDate, taskPriority, tarefa, isConcluded);
+            openEditModal(taskName, taskDescription, taskDate, taskPriority, tarefa, isConcluded, lista);
         });
 
 
         // Função de excluir
         const deleteIcon = tarefa.querySelector('.delete-icon');
         deleteIcon.addEventListener('click', () => {
-            deleteTask(tarefa, listId, taskId);
+            deleteTaskFromFirebase(taskId);
         });
 
 
@@ -281,33 +261,30 @@ function saveTask(event) {
             }
         });
 
-
-        if (!taskLists[listId]) {
-            taskLists[listId] = [];
-        }
-        taskLists[listId].push(newTask);
-        saveTasksToLocalStorage(taskLists);
-
-
-        //Adicionar no Firestore
-        AddandEditTask(newTask)
-
-
         activeList.querySelector('.tarefas').appendChild(tarefa);
         console.log("Tarefa adicionada: ", taskDate, taskName, taskDescription);
+        
+        //Adicionar no Firestore
+        AddandEditTask(newTask);
     }
 
-
+    loadTasksFromFirebase();
     closeTaskModal();
 }
 
-
 // Função para abrir o modal de edição
-function openEditModal(name, description, date, priority, tarefa, isConcluded) {
+async function  openEditModal(name, description, date, priority, tarefa, isConcluded, lista) {
+    // Atualizar `activeList` com a lista da tarefa
+    const taskId = tarefa.getAttribute('data-task-id');
+    const cor = await getListColorByTaskId(taskId);
+    console.log(cor);
+    if(cor){
+        taskModal.style.backgroundColor = cor;
+    }else{
+        taskModal.style.backgroundColor = "#FFA500";
+    }
     taskModal.style.display = 'flex';
     overlay.style.display = 'block';
-    taskModal.style.backgroundColor = "#a464c2";
-
 
     // Se a data estiver no formato yyyy-mm-dd, converta para dd/mm ao exibir no modal
     document.getElementById('taskName').value = name;
@@ -318,32 +295,24 @@ function openEditModal(name, description, date, priority, tarefa, isConcluded) {
 
 
     currentTask = tarefa;
+    // activeList = await getListByTaskId(taskId);
 }
 
 // Função para fechar o modal de tarefa
 function closeTaskModal() {
     taskModal.style.display = 'none';
     overlay.style.display = 'none';
-
+    taskModal.style.backgroundColor = null;
 
     // Resetar o formulário e limpar a referência à tarefa atual
     taskForm.reset();
     currentTask = null; // Limpa a referência da tarefa atual
 }
 
-// Função para deletar uma tarefa
-function deleteTask(taskElement, listId, taskId) {
-    taskElement.remove();
-    taskLists[listId] = taskLists[listId].filter(task => task.id !== taskId);
-    saveTasksToLocalStorage(taskLists);
-}
-
-
 // Eventos para os botões de cancelar e fechar modal de tarefa
 if (cancelBtn) {
     cancelBtn.addEventListener('click', closeTaskModal);
 }
-
 
 if (taskForm) {
     taskForm.addEventListener('submit', saveTask);
@@ -385,7 +354,6 @@ if (cancelBtnList) {
 // Evento para fechar o modal de lista ao clicar no "X"
 closeListModalBtn.addEventListener('click', closeListModal);
 
-
 // Função para adicionar ou editar lista no Firebase
 const AddandEditList = async (list) => {
     try {
@@ -425,9 +393,7 @@ const loadListsFromFirebase = async () => {
 
             newList.innerHTML = `
                 <div class="list-header">
-                    <span class="edit-list-icon">&#9998;</span> <!-- Ícone de edição -->
                     <h2>${list.name}</h2>
-                    <span class="delete-list-icon">&#128465;</span> <!-- Ícone de exclusão -->
                 </div>
                 <div class="tarefas"></div>
                 <button class="add-tarefa">Adicionar Tarefa</button>
@@ -440,16 +406,16 @@ const loadListsFromFirebase = async () => {
             addTarefaBtn.addEventListener('click', () => openTaskModal(newList));
 
             // Função de editar a lista
-            const editListIcon = newList.querySelector('.edit-list-icon');
-            editListIcon.addEventListener('click', () => {
-                editList(newList);
-            });
+            // const editListIcon = newList.querySelector('.edit-list-icon');
+            // editListIcon.addEventListener('click', () => {
+            //     editList(newList);
+            // });
 
             // Função de excluir a lista
-            const deleteListIcon = newList.querySelector('.delete-list-icon');
-            deleteListIcon.addEventListener('click', () => {
-                deleteList(newList, list.id);
-            });
+            // const deleteListIcon = newList.querySelector('.delete-list-icon');
+            // deleteListIcon.addEventListener('click', () => {
+            //     deleteList(newList, list.id);
+            // });
 
             // Atualizar a cor do texto do botão
             updateButtonColorForList(newList);
@@ -483,9 +449,7 @@ listForm.addEventListener('submit', (event) => {
 
     listElement.innerHTML = `
         <div class="list-header">
-            <span class="edit-list-icon">&#9998;</span> <!-- Ícone de edição -->
             <h2>${listName}</h2>
-            <span class="delete-list-icon">&#128465;</span> <!-- Ícone de exclusão -->
         </div>
         <div class="tarefas"></div>
         <button class="add-tarefa">Adicionar Tarefa</button>
@@ -497,18 +461,6 @@ listForm.addEventListener('submit', (event) => {
     const addTarefaBtn = listElement.querySelector('.add-tarefa');
     addTarefaBtn.addEventListener('click', () => openTaskModal(listElement));
 
-    // Função de editar a lista
-    const editListIcon = listElement.querySelector('.edit-list-icon');
-    editListIcon.addEventListener('click', () => {
-        editList(listElement);
-    });
-
-    // Função de excluir a lista
-    const deleteListIcon = listElement.querySelector('.delete-list-icon');
-    deleteListIcon.addEventListener('click', () => {
-        deleteList(listElement, listId);
-    });
-
     // Atualizar a cor do texto do botão
     updateButtonColorForList(listElement);
 
@@ -518,22 +470,6 @@ listForm.addEventListener('submit', (event) => {
     closeListModal();
 });
 
-// Função para editar a lista
-function editList(listElement) {
-    const listName = prompt("Editar o nome da lista:", listElement.querySelector('h2').textContent);
-    if (listName !== null) {
-        listElement.querySelector('h2').textContent = listName;
-    }
-}
-
-
-// Função para excluir a lista
-function deleteList(listElement, listId) {
-    listElement.remove();
-    delete taskLists[listId]; // Remove a lista do localStorage
-    saveTasksToLocalStorage(taskLists);
-}
-
 
 // Fecha o modal de lista ao clicar fora dele
 window.addEventListener('click', (event) => {
@@ -542,6 +478,7 @@ window.addEventListener('click', (event) => {
     }
 });
 // --------------------------------------Firebase-------------------------------------
+// -------------------------Tarefas-------------------------
 function addTaskToFirebase(task) {
     const taskId = Date.now(); // ID único baseado no timestamp
     firebase.database().ref('tasks/' + taskId).set({
@@ -567,8 +504,9 @@ function loadTasksFromFirebase() {
     });
 }
 
-function updateTaskInFirebase(taskId, updatedTask) {
-    firebase.database().ref('tasks/' + taskId).update(updatedTask)
+// Função para atualizar a tarefa no Firestore
+function updateTaskInFirestore(taskId, updatedTask) {
+    db.collection("tasks").doc(taskId).update(updatedTask)
         .then(() => {
             console.log("Tarefa atualizada com sucesso!");
         })
@@ -578,82 +516,12 @@ function updateTaskInFirebase(taskId, updatedTask) {
 }
 
 function deleteTaskFromFirebase(taskId) {
-    firebase.database().ref('tasks/' + taskId).remove()
-        .then(() => {
-            console.log("Tarefa excluída com sucesso!");
-        })
-        .catch((error) => {
-            console.error("Erro ao excluir tarefa:", error);
-        });
-}
-
-// Função para carregar todas as listas e suas tarefas do Firebase
-async function loadTasksFromFirebase() {
     try {
-        const querySnapshot = await db.collection("tasks").get();
-
-        // Limpa as tarefas visíveis antes de carregar novas tarefas do Firebase
-        document.querySelectorAll('.tarefas').forEach(taskListElement => {
-            taskListElement.innerHTML = ''; // Limpa cada lista de tarefas no DOM
-        });
-
-        // Itera sobre cada tarefa retornada
-        querySnapshot.forEach((doc) => {
-            const task = doc.data();
-            const taskListId = task.list; // ID da lista a qual a tarefa pertence
-
-            // Encontrar o elemento da lista que tem o mesmo ID
-            const targetList = document.querySelector(`.lista[data-list-id='${taskListId}']`);
-
-            if (targetList) {
-                // Criar o card da tarefa
-                const tarefa = document.createElement('div');
-                tarefa.classList.add('tarefa');
-                tarefa.setAttribute('data-task-id', task.id);
-
-                tarefa.innerHTML = `
-                    <div class="task-header">
-                        <span class="edit-icon">&#9998;</span>
-                        <span class="delete-icon">&#128465;</span>
-                    </div>
-                    <h3>${task.name}</h3>
-                    <p><strong>Data:</strong> ${task.date.split('-').reverse().join('/')}</p> 
-                    <p class="priority ${task.priority.toLowerCase()}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</p>
-                    <label>
-                        <input type="checkbox" class="checkbox-concluido" ${task.concluded ? 'checked' : ''}>
-                        Concluído
-                    </label>
-                `;
-
-                // Adicionar o evento de edição
-                tarefa.querySelector('.edit-icon').addEventListener('click', () => {
-                    openEditModal(task.name, task.description, task.date, task.priority, tarefa, task.concluded);
-                });
-
-                // Adicionar o evento de exclusão
-                tarefa.querySelector('.delete-icon').addEventListener('click', () => {
-                    deleteTask(tarefa, taskListId, task.id);
-                });
-
-                // Adicionar evento de checkbox
-                tarefa.querySelector('.checkbox-concluido').addEventListener('change', (event) => {
-                    if (event.target.checked) {
-                        tarefa.classList.add('concluido');
-                    } else {
-                        tarefa.classList.remove('concluido');
-                    }
-                });
-
-                // Adiciona a tarefa na lista correspondente
-                targetList.querySelector('.tarefas').appendChild(tarefa);
-            } else {
-                console.error(`Lista com ID ${taskListId} não encontrada no DOM.`);
-            }
-        });
-
-        console.log("Tarefas carregadas e adicionadas às listas corretamente!");
+        db.collection("tasks").doc(taskId.toString()).delete();
+        console.log("Tarefa excluída com sucesso!");
+        loadTasksFromFirebase();
     } catch (error) {
-        console.error("Erro ao buscar todas as tarefas: ", error);
+        console.error("Erro ao excluir tarefa:", error);
     }
 }
 
@@ -665,6 +533,10 @@ async function loadTasksFromFirebase() {
         document.querySelectorAll('.tarefas').forEach(taskListElement => {
             taskListElement.innerHTML = ''; // Limpa cada lista de tarefas no DOM
         });
+
+        // Arrays para armazenar as tasks concluídas e não concluídas
+        const completedTasks = [];
+        const uncompletedTasks = [];
 
         // Itera sobre cada tarefa retornada
         querySnapshot.forEach((doc) => {
@@ -678,49 +550,70 @@ async function loadTasksFromFirebase() {
                 taskListId = createdListElement ? 'criadas' : null;
             }
 
-            // Encontrar o elemento da lista que tem o mesmo ID
+            // Criar o card da tarefa
+            const tarefa = document.createElement('div');
+            tarefa.classList.add('tarefa');
+            tarefa.setAttribute('data-task-id', task.id);
+            
+            if (task.concluded) {
+                tarefa.classList.add('concluido');
+            }
+
+            tarefa.innerHTML = `
+                <div class="task-header">
+                    <span class="edit-icon">&#9998;</span>
+                    <span class="delete-icon">&#128465;</span>
+                </div>
+                <h3>${task.name}</h3>
+                <p><strong>Data:</strong> ${task.date.split('-').reverse().join('/')}</p> 
+                <p class="priority ${task.priority.toLowerCase()}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</p>
+                <label>
+                    <input type="checkbox" class="checkbox-concluido" ${task.concluded ? 'checked' : 'disabled'} disabled>
+                    Concluído
+                </label>
+            `;
+
+            // Adicionar o evento de edição
+            tarefa.querySelector('.edit-icon').addEventListener('click', () => {
+                openEditModal(task.name, task.description, task.date, task.priority, tarefa, task.concluded);
+            });
+
+            // Adicionar o evento de exclusão
+            tarefa.querySelector('.delete-icon').addEventListener('click', () => {
+                deleteTaskFromFirebase(task.id);
+            });
+
+            // Adicionar evento de checkbox
+            tarefa.querySelector('.checkbox-concluido').addEventListener('change', (event) => {
+                if (event.target.checked) {
+                    tarefa.classList.add('concluido');
+                } else {
+                    tarefa.classList.remove('concluido');
+                }
+            });
+
+            // Adicionar ao array correto (concluída ou não concluída)
+            if (task.concluded) {
+                completedTasks.push({ tarefa, taskListId });
+            } else {
+                uncompletedTasks.push({ tarefa, taskListId });
+            }
+        });
+
+        // Adiciona as tasks não concluídas primeiro
+        uncompletedTasks.forEach(({ tarefa, taskListId }) => {
             const targetList = document.querySelector(`.lista[data-list-id='${taskListId}']`);
-
             if (targetList) {
-                // Criar o card da tarefa
-                const tarefa = document.createElement('div');
-                tarefa.classList.add('tarefa');
-                tarefa.setAttribute('data-task-id', task.id);
+                targetList.querySelector('.tarefas').appendChild(tarefa);
+            } else {
+                console.error(`Lista com ID ${taskListId} não encontrada no DOM.`);
+            }
+        });
 
-                tarefa.innerHTML = `
-                    <div class="task-header">
-                        <span class="edit-icon">&#9998;</span>
-                        <span class="delete-icon">&#128465;</span>
-                    </div>
-                    <h3>${task.name}</h3>
-                    <p><strong>Data:</strong> ${task.date.split('-').reverse().join('/')}</p> 
-                    <p class="priority ${task.priority.toLowerCase()}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</p>
-                    <label>
-                        <input type="checkbox" class="checkbox-concluido" ${task.concluded ? 'checked' : ''}>
-                        Concluído
-                    </label>
-                `;
-
-                // Adicionar o evento de edição
-                tarefa.querySelector('.edit-icon').addEventListener('click', () => {
-                    openEditModal(task.name, task.description, task.date, task.priority, tarefa, task.concluded);
-                });
-
-                // Adicionar o evento de exclusão
-                tarefa.querySelector('.delete-icon').addEventListener('click', () => {
-                    deleteTask(tarefa, taskListId, task.id);
-                });
-
-                // Adicionar evento de checkbox
-                tarefa.querySelector('.checkbox-concluido').addEventListener('change', (event) => {
-                    if (event.target.checked) {
-                        tarefa.classList.add('concluido');
-                    } else {
-                        tarefa.classList.remove('concluido');
-                    }
-                });
-
-                // Adiciona a tarefa na lista correspondente
+        // Adiciona as tasks concluídas depois
+        completedTasks.forEach(({ tarefa, taskListId }) => {
+            const targetList = document.querySelector(`.lista[data-list-id='${taskListId}']`);
+            if (targetList) {
                 targetList.querySelector('.tarefas').appendChild(tarefa);
             } else {
                 console.error(`Lista com ID ${taskListId} não encontrada no DOM.`);
@@ -732,6 +625,7 @@ async function loadTasksFromFirebase() {
         console.error("Erro ao buscar todas as tarefas: ", error);
     }
 }
+
 
 // Função para buscar todas as tarefas de uma lista pelo ID da lista no Firebase
 const getTasksByListId = async (listId) => {
@@ -748,21 +642,109 @@ const getTasksByListId = async (listId) => {
     }
 };
 
+// Função para buscar a lista ativa de uma tarefa
+const getListByTaskId = async (taskId) => {
+    try {
+        // Busca a tarefa pelo ID
+        const taskDoc = await db.collection("tasks").doc(taskId).get();
+        
+        if (!taskDoc.exists) {
+            console.error(`Tarefa com ID ${taskId} não encontrada.`);
+            return null;
+        }
+        
+        // Obtém a referência à lista da tarefa e converte o ID para número
+        const taskData = taskDoc.data();
+        const listId = Number(taskData.list); // Converte para número
+        console.log(listId);
+
+        if (isNaN(listId)) {
+            console.error("ID da lista inválido na tarefa.");
+            return null;
+        }
+        
+        // Busca a lista onde o ID é igual ao `listId` convertido
+        const listQuery = await db.collection("lists").where("id", "==", listId).get();
+        // console.log(`${listQuery.docs[0].id}`);
+
+        // Extrai e retorna a lista encontrada
+        if (!listQuery.empty) {
+            const listDoc = listQuery.docs[0];
+            // console.log(`Lista encontrada: ID - ${listQuery.docs[0].id}, Nome - ${listQuery.docs[0].name}, Cor - ${listQuery.docs[0].color}`);
+            // console.log(listQuery.docs[0].id);
+            return String(listDoc.id);
+        } else {
+            console.error(`Lista com ID ${listId} não encontrada.`);
+            return null;
+        }
+
+    } catch (error) {
+        console.error("Erro ao buscar lista ativa pela ID da tarefa: ", error);
+    }
+};
+
+// Função para buscar a lista ativa de uma tarefa
+const getListColorByTaskId = async (taskId) => {
+    try {
+        // Busca a tarefa pelo ID
+        const taskDoc = await db.collection("tasks").doc(taskId).get();
+        
+        if (!taskDoc.exists) {
+            console.error(`Tarefa com ID ${taskId} não encontrada.`);
+            return null;
+        }
+        
+        // Obtém a referência à lista da tarefa e converte o ID para número
+        const taskData = taskDoc.data();
+        const listId = Number(taskData.list); // Converte para número
+        // console.log(listId);
+
+        if (isNaN(listId)) {
+            console.error("ID da lista inválido na tarefa.");
+            return null;
+        }
+        
+        // Busca a lista onde o ID é igual ao `listId` convertido
+        const listQuery = await db.collection("lists").where("id", "==", listId).get();
+        // console.log(`${listQuery.docs[0].color}`);
+
+        // Extrai e retorna a lista encontrada
+        if (!listQuery.empty) {
+            const listDoc = listQuery.docs[0];
+            // console.log(`Lista encontrada: ID - ${listQuery.docs[0].id}, Nome - ${listQuery.docs[0].name}, Cor - ${listQuery.docs[0].color}`);
+            // console.log(listQuery.docs[0].id);
+            return String(listDoc.data().color);
+        } else {
+            console.error(`Lista com ID ${listId} não encontrada.`);
+            return null;
+        }
+
+    } catch (error) {
+        console.error("Erro ao buscar lista ativa pela ID da tarefa: ", error);
+    }
+};
+
+
+
 // Carregar as listas e suas tarefas quando a página for carregada
 document.addEventListener('DOMContentLoaded', () => {
+    getDatabase();
+});
+
+function getDatabase(){
     loadListsFromFirebase().then(() => {
         // 2. Após carregar as listas, carregar as tarefas e colocá-las em suas respectivas listas
         loadTasksFromFirebase();
     });
-});
+}
 
 //---------------------------------Funções do Firestore--------------------------------------
 const AddandEditTask = async (task) => {
     try {
-        // Referenciando o documento com o ID fornecido (task.id)
         await db.collection("tasks").doc(task.id.toString()).set(task);
         console.log("Documento adicionado ou editado com sucesso!");
+        // getDatabase();
     } catch (error) {
-        console.error("Erro ao adicionar ou editar documento: ", error);
+        console.error("Erro ao adicionar ou editar documento:", error);
     }
 };

@@ -5,36 +5,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hoje</title>
-  <link rel="stylesheet" href="CSS/estilo.css"> <!-- Importa o CSS corretamente -->
-
+  <link rel="stylesheet" href="CSS/estilo.css">
+  <link rel="stylesheet" href="CSS/hoje.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 
 <body>
-
-  <nav class="sidebar">
-    <div class="logo">
-      <!-- Referência correta à imagem da logo -->
-      <a href="inicio.html">
-        <img src="Imagens/logo.png" alt="Logo V360">
-      </a>
+  <div class="principal">
+    <nav class="sidebar">
+      <div class="logo">
+        <!-- Referência correta à imagem da logo -->
+        <a href="inicio.html">
+          <img src="Imagens/logo.png" alt="Logo V360">
+        </a>
+      </div>
+  
+      <!-- Botões do Menu -->
+      <a href="inicio.html"><button class="nav-btn" id="btn-inicio">Início</button></a>
+      <!-- <a href="calendario.html"><button class="nav-btn" id="btn-calendario">Calendário</button></a> -->
+      <a href="hoje.html"><button class="nav-btn" id="btn-hoje">Hoje</button></a>
+      <a href="filtro.html"><button class="nav-btn" id="btn-filtro">Filtro</button></a>
+  
+      <!-- Área de usuário e logout -->
+      <div class="user-logout">
+        <span class="user-info">Usuário: Nathalia</span>
+        <a href="index.html" class = "logout">
+          <img src="Imagens/logout.png" alt="Logout"> <!-- Imagem do Logout -->
+        </a>
+      </div>
+    </nav>
+  
+    <div class="content">
+      <div class="today-tasks-container">
+        <div id = "data_1">
+        </div>
+        <h2>Para hoje:</h2>
+        <div id="todayTasks">
+          <!-- As tarefas de hoje serão inseridas aqui -->
+        </div>
+      </div>
     </div>
-
-    <!-- Botões do Menu -->
-    <a href="inicio.html"><button class="nav-btn" id="btn-inicio">Início</button></a>
-    <!-- <a href="calendario.html"><button class="nav-btn" id="btn-calendario">Calendário</button></a> -->
-    <a href="hoje.html"><button class="nav-btn" id="btn-hoje">Hoje</button></a>
-    <a href="filtro.html"><button class="nav-btn" id="btn-filtro">Filtro</button></a>
-
-    <!-- Área de usuário e logout -->
-    <div class="user-logout">
-      <span class="user-info">Usuário: </span>
-      <a href="index.html">
-        <img src="Imagens/logout.png" alt="Logout"> <!-- Imagem do Logout -->
-      </a>
-    </div>
-  </nav>
+  </div>
   <script src="JS/fun.js"></script>
   <script type="module" src="JS/firebase.js"></script>
+  <script type="module" src="JS/hoje.js"></script>
 </body>
 
 </html>

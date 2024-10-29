@@ -6,34 +6,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filtro</title>
   <link rel="stylesheet" href="CSS/estilo.css"> <!-- Importa o CSS corretamente -->
+  <link rel="stylesheet" href="CSS/filtro.css">
 </head>
 
 <body>
+    <div class="principal">
+    <nav class="sidebar">
+      <div class="logo">
+        <!-- Referência correta à imagem da logo -->
+        <a href="inicio.html">
+          <img src="Imagens/logo.png" alt="Logo V360">
+        </a>
+      </div>
 
-  <nav class="sidebar">
-    <div class="logo">
-      <!-- Referência correta à imagem da logo -->
-      <a href="inicio.html">
-        <img src="Imagens/logo.png" alt="Logo V360">
-      </a>
+      <!-- <img src="Imagens\detalhes.png" alt=""> -->
+
+      <!-- Botões do Menu -->
+      <a href="inicio.html"><button class="nav-btn" id="btn-inicio">Início</button></a>
+      <!-- <a href="calendario.html"><button class="nav-btn" id="btn-calendario">Calendário</button></a> -->
+      <a href="hoje.html"><button class="nav-btn" id="btn-hoje">Hoje</button></a>
+      <a href="filtro.html"><button class="nav-btn" id="btn-filtro">Filtro</button></a>
+
+      <!-- Área de usuário e logout -->
+      <div class="user-logout">
+        <span class="user-info">Usuário: Nathalia</span>
+        <a href="index.html" class="logout">
+          <img src="Imagens/logout.png" alt="Logout"> <!-- Imagem do Logout -->
+        </a>
+      </div>
+    </nav>
+
+    <div class="search-section">
+      <!-- <p class="search-description">Utilize o campo abaixo para realizar uma busca personalizada em suas tarefas:</p> -->
+      <!-- Botão para abrir o modal -->
+      <button id="openFilterModal" class="filter-button">🔍 Buscar Tarefas</button>
+      <div id="filteredTasks" class="tasks-list"></div>
     </div>
 
-    <!-- Botões do Menu -->
-    <a href="inicio.html"><button class="nav-btn" id="btn-inicio">Início</button></a>
-    <!-- <a href="calendario.html"><button class="nav-btn" id="btn-calendario">Calendário</button></a> -->
-    <a href="hoje.html"><button class="nav-btn" id="btn-hoje">Hoje</button></a>
-    <a href="filtro.html"><button class="nav-btn" id="btn-filtro">Filtro</button></a>
+    <!-- Estrutura do Modal -->
+    <div id="filterModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Selecione sua busca:</h3>
+        <form id="filterForm">
+          <div class="filter-controls">
+            <label for="filter-type">Tipo:</label>
+            <select id="filter-type" onchange="updateFilterOptions()">
+              <option value="" disabled selected>Selecione o tipo</option>
+              <option value="Prioridade">Prioridade</option>
+              <option value="nomeLista">Nome da Lista</option>
+            </select>
 
-    <!-- Área de usuário e logout -->
-    <div class="user-logout">
-      <span class="user-info">Usuário: </span>
-      <a href="index.html">
-        <img src="Imagens/logout.png" alt="Logout"> <!-- Imagem do Logout -->
-      </a>
+            <label for="filter-value">Pesquisa:</label>
+            <select id="filter-value">
+              <option value="" disabled selected>Selecione um valor</option>
+            </select>
+          </div>
+          <button type="submit" class="submit-button">Aplicar Filtro</button>
+        </form>
+      </div>
     </div>
-  </nav>
+  </div>
   <script src="JS/fun.js"></script>
   <script type="module" src="JS/firebase.js"></script>
+  <script type="module" src="JS/filtro.js" defer></script>
 </body>
 
 </html>

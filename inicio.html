@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To Do</title>
-    <link rel="stylesheet" href="CSS/estilo.css"> 
+    <link rel="stylesheet" href="CSS/estilo.css">
     <link rel="stylesheet" href="CSS/inicio.css">
 
-     <!-- Firebase SDK (versão 8.x) -->
-     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Firebase SDK (versão 8.x) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 
 <body>
@@ -32,8 +32,8 @@
 
             <!-- Área de usuário e logout -->
             <div class="user-logout">
-                <span class="user-info">Usuário: </span>
-                <a href="index.html">
+                <span class="user-info">Usuário: Nathalia</span>
+                <a href="index.html" class = "logout">
                     <img src="Imagens/logout.png" alt="Logout"> <!-- Imagem do Logout -->
                 </a>
             </div>
@@ -41,7 +41,7 @@
         </nav>
         <!-- Seção dinâmica de listas com rolagem -->
         <div class="scrollable-section">
-            <div class="lista lista-criadas" data-list-id = "criadas">
+            <div class="lista lista-criadas" data-list-id="criadas">
                 <h2>Criadas</h2>
                 <div class="tarefas"></div>
                 <button class="add-tarefa">Adicionar Tarefa</button>
@@ -108,6 +108,7 @@
         <script type="module" src="JS/firebase.js"></script>
         <script src="JS/fun.js"></script>
         <script src="JS/inicio.js"></script>
+    </div>
 
 </body>
 
