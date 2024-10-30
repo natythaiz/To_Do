@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filtro</title>
-  <link rel="stylesheet" href="CSS/estilo.css"> <!-- Importa o CSS corretamente -->
+  <link rel="stylesheet" href="CSS/estilo.css"> 
   <link rel="stylesheet" href="CSS/filtro.css">
 </head>
 
@@ -13,16 +13,14 @@
     <div class="principal">
     <nav class="sidebar">
       <div class="logo">
-        <!-- Referência correta à imagem da logo -->
-        <a href="inicio.html">
+        <!-- Referência à imagem da logo -->
+        <a href="index.html">
           <img src="Imagens/logo.png" alt="Logo V360">
         </a>
       </div>
 
-      <!-- <img src="Imagens\detalhes.png" alt=""> -->
-
       <!-- Botões do Menu -->
-      <a href="inicio.html"><button class="nav-btn" id="btn-inicio">Início</button></a>
+      <a href="index.html"><button class="nav-btn" id="btn-inicio">Início</button></a>
       <!-- <a href="calendario.html"><button class="nav-btn" id="btn-calendario">Calendário</button></a> -->
       <a href="hoje.html"><button class="nav-btn" id="btn-hoje">Hoje</button></a>
       <a href="filtro.html"><button class="nav-btn" id="btn-filtro">Filtro</button></a>
@@ -31,13 +29,12 @@
       <div class="user-logout">
         <span class="user-info">Usuário: Nathalia</span>
         <a href="index.html" class="logout">
-          <img src="Imagens/logout.png" alt="Logout"> <!-- Imagem do Logout -->
+          <img src="Imagens/logout.png" alt="Logout"> <!--Logout -->
         </a>
       </div>
     </nav>
 
     <div class="search-section">
-      <!-- <p class="search-description">Utilize o campo abaixo para realizar uma busca personalizada em suas tarefas:</p> -->
       <!-- Botão para abrir o modal -->
       <button id="openFilterModal" class="filter-button">🔍 Buscar Tarefas</button>
       <div id="filteredTasks" class="tasks-list"></div>

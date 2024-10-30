@@ -76,27 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-// ---------------------------------------------Local Storage-----------------------------------------------------------------------
-// Funções para trabalhar com LocalStorage
-function saveTasksToLocalStorage(taskLists) {
-    localStorage.setItem('taskLists', JSON.stringify(taskLists));
-}
-
-function loadTasksFromLocalStorage() {
-    const storedTasks = localStorage.getItem('taskLists');
-    return storedTasks ? JSON.parse(storedTasks) : {};
-}
-
-// Função para salvar as listas de tarefas no LocalStorage
-function saveTasksToLocalStorage(taskLists) {
-    localStorage.setItem('taskLists', JSON.stringify(taskLists)); // Converte o objeto para JSON e salva no LocalStorage
-}
-
-// Função para carregar as tarefas do LocalStorage
-function loadTasksFromLocalStorage() {
-    const storedTasks = localStorage.getItem('taskLists');
-    return storedTasks ? JSON.parse(storedTasks) : {}; // Se houver dados, retorna o objeto JSON, caso contrário, um objeto vazio
-}
 // ----------------------------------ADICIONAR TAREFA--------------------------------------------------------------------------
 // Seleciona os elementos necessários para tarefas
 const taskModal = document.getElementById('taskModal'); // Modal de tarefa
@@ -107,22 +86,17 @@ const overlay = document.getElementById('overlay'); // Overlay do modal de taref
 
 let activeList = null; // Lista ativa onde a tarefa será inserida
 let currentTask = null; // Variável que armazena a tarefa sendo editada
-
-
+// -----------------------------Configuração da Lista Criadas------------------------------------
 // Seleciona o botão "Adicionar Tarefa" da lista "Criadas"
 const addTarefaCriadasBtn = document.querySelector('.lista-criadas .add-tarefa');
-
-
 // Adiciona o evento de click para o botão "Adicionar Tarefa" da lista "Criadas"
 if (addTarefaCriadasBtn) {
     addTarefaCriadasBtn.addEventListener('click', () => openTaskModal(document.querySelector('.lista-criadas')));
 }
 
-
 // Função para abrir o modal de tarefa
 function openTaskModal(list) {
     activeList = list; // Define a lista ativa
-
 
     // Obtém a cor de fundo da lista ativa
     const listColor = getComputedStyle(activeList).backgroundColor;
@@ -191,7 +165,6 @@ async function saveTask(event) {
         currentTask.querySelector('.priority').className = `priority ${priorityClass}`;
         currentTask.querySelector('p').textContent = `Data: ${formattedDate}`; // Exibe a data formatada no cartão
         currentTask.querySelector('.checkbox-concluido').checked = isConcluded;
-
 
         // Atualizar a tarefa no Firestore
         AddandEditTask({
@@ -293,9 +266,7 @@ async function  openEditModal(name, description, date, priority, tarefa, isConcl
     document.getElementById('taskPriority').value = priority;
     document.getElementById('concluidoCheckbox').checked = isConcluded;
 
-
     currentTask = tarefa;
-    // activeList = await getListByTaskId(taskId);
 }
 
 // Função para fechar o modal de tarefa
@@ -325,13 +296,11 @@ const closeListModalBtn = document.querySelector('.close-modal'); // Botão de f
 const listForm = document.getElementById('listForm'); // Formulário de lista
 const scrollableSection = document.querySelector('.scrollable-section'); // Seção para adicionar as listas
 
-
 // Função para abrir o modal de nova lista
 function openListModal() {
     listModal.style.display = 'flex';
     overlay.style.display = 'block';
 }
-
 
 // Função para fechar o modal de lista
 function closeListModal() {
@@ -340,16 +309,13 @@ function closeListModal() {
     listForm.reset();
 }
 
-
 // Evento para abrir o modal de lista ao clicar em "+ Lista"
 document.querySelector('.add-lista button').addEventListener('click', openListModal);
-
 
 // Evento para fechar o modal de lista ao clicar em "Cancelar"
 if (cancelBtnList) {
     cancelBtnList.addEventListener('click', closeListModal);
 }
-
 
 // Evento para fechar o modal de lista ao clicar no "X"
 closeListModalBtn.addEventListener('click', closeListModal);
@@ -724,26 +690,23 @@ const getListColorByTaskId = async (taskId) => {
     }
 };
 
-
-
 // Carregar as listas e suas tarefas quando a página for carregada
 document.addEventListener('DOMContentLoaded', () => {
     getDatabase();
 });
 
 function getDatabase(){
+    // 1. Primeiramente as listas são carregadas
     loadListsFromFirebase().then(() => {
         // 2. Após carregar as listas, carregar as tarefas e colocá-las em suas respectivas listas
         loadTasksFromFirebase();
     });
 }
 
-//---------------------------------Funções do Firestore--------------------------------------
 const AddandEditTask = async (task) => {
     try {
         await db.collection("tasks").doc(task.id.toString()).set(task);
         console.log("Documento adicionado ou editado com sucesso!");
-        // getDatabase();
     } catch (error) {
         console.error("Erro ao adicionar ou editar documento:", error);
     }

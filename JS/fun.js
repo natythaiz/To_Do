@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeButton.classList.add('active') // Destaca o botão da página atual
         }
     } else {
-        // Se estiver na página inicial padrão (ex: index.html), adicionar a classe ao botão "Início"
+        // Se estiver na página inicial padrão, adicionar a classe ao botão "Início"
         const homeButton = document.getElementById('btn-inicio')
         if (homeButton) {
             homeButton.classList.add('active')

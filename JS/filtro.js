@@ -81,7 +81,6 @@ async function getListColorByTaskId(taskId) {
         const taskData = taskDoc.data();
         const listId = taskData.list;
         // console.log(listId);
-        // console.log(listId)
         // Verifica se `listId` é "criadas" e define uma cor padrão para essa lista
         if (listId == null) {
             console.log("Lista 'criadas' encontrada, retornando cor padrão.");
